@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pycountry
-from meteostat import stations
+from meteostat import Station
 
 from helper_functions import (
     acis_make_list,
@@ -36,7 +36,7 @@ class StationLocator:
         pass
 
     def stations_by_location(
-        self, latitude: float, logitude: float, state: str
+        self, latitude: float, longitude: float, state: str
     ) -> list:
         pass
 
@@ -64,7 +64,7 @@ class StationLocatorMeteostat(StationLocator):
         return coverage
 
     def __init__(self) -> None:
-        self.stations_obj = stations()
+        self.stations_obj = Station()
         self.stations = None
         super().__init__("Meteostat")
 
@@ -263,6 +263,7 @@ if __name__ == "__main__":
     search_radius = 500000
 
     ds = {cls.id: cls for cls in StationLocator.__subclasses__()}
+    print(ds)
 
     for source in list(ds.keys()):
         locator = ds[source]()
