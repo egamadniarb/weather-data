@@ -242,7 +242,7 @@ if __name__ == "__main__":
                 ):
                     print(
                         "\tCountry: {}, Region Name: {}, Region Code: {}, \
-    Neighboring: {}".format(
+                        Neighboring: {}".format(
                             country,
                             region_name,
                             region_code,
@@ -255,33 +255,33 @@ if __name__ == "__main__":
                             Region Code: {}".format(country, region_name, region_code)
                     )
 
-    lat = 42.3508285
-    long = -82.9994093
-    state = "MI"
-    start_date = datetime(2020, 1, 1, 0, 0, 0)
-    end_date = datetime(2020, 12, 31, 23, 59, 59)
-    search_radius = 500000
+#     lat = 42.3508285
+#     long = -82.9994093
+#     state = "MI"
+#     start_date = datetime(2020, 1, 1, 0, 0, 0)
+#     end_date = datetime(2020, 12, 31, 23, 59, 59)
+#     search_radius = 500000
 
-    ds = {cls.id: cls for cls in StationLocator.__subclasses__()}
-    print(ds)
+#     ds = {cls.id: cls for cls in StationLocator.__subclasses__()}
+#     print(ds)
 
-    for source in list(ds.keys()):
-        locator = ds[source]()
-        print(locator.id)
-        success = locator.set_lookup_radius(search_radius)
-        station_list = locator.stations_by_location(lat, long, state)
-        station_list = locator.filter_by_hourly(start_date, end_date)
-        station_list = locator.filter_by_daily(start_date, end_date)
-        for station in station_list:
-            print(
-                "Station Name: {} Country: {} State: {} Distance: {} \
-WMO {} ICAO {}".format(
-                    station["name"],
-                    station["country"],
-                    station["state"],
-                    round(station["distance"], 2),
-                    station["wmo"],
-                    station["icao"],
-                )
-            )
-        print(len(station_list))
+#     for source in list(ds.keys()):
+#         locator = ds[source]()
+#         print(locator.id)
+#         success = locator.set_lookup_radius(search_radius)
+#         station_list = locator.stations_by_location(lat, long, state)
+#         station_list = locator.filter_by_hourly(start_date, end_date)
+#         station_list = locator.filter_by_daily(start_date, end_date)
+#         for station in station_list:
+#             print(
+#                 "Station Name: {} Country: {} State: {} Distance: {} \
+# WMO {} ICAO {}".format(
+#                     station["name"],
+#                     station["country"],
+#                     station["state"],
+#                     round(station["distance"], 2),
+#                     station["wmo"],
+#                     station["icao"],
+#                 )
+#             )
+#         print(len(station_list))
