@@ -1,10 +1,12 @@
-from typing import Union
+import json
 from datetime import datetime
-from math import cos, acos, radians
+from math import acos, cos, radians
+from typing import Union
+
+import pandas
+import pandas._libs.missing
 import requests
 from requests.exceptions import RequestException
-import json
-import pandas
 
 # Used for Meteostat implementation
 
@@ -215,7 +217,7 @@ def acis_make_list(stations: list) -> list:
             # ACIS returns Imperial values, convert feet to meters
             try:
                 elevation = round(float(elevation) / 3.2808, 2)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 pass
         # time zone is offset from GMT/UTC
         time_zone = 0
