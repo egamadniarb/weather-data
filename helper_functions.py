@@ -151,7 +151,7 @@ def query_acis_data(query_type: str, data: str) -> Union[None, requests.Response
     return reply
 
 
-def parse_out_station_ids(sids: list):
+def parse_out_station_ids(sids: list[str]):
     # wmo: looking for type 4 (last character of sid string)
     # icao: looking for type 5 (last character of sid string)
     # id: prefer faa (3), then icao (5), then wmo (4), then ghcn (6),
