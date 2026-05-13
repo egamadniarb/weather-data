@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from math import isnan, nan
 
+from meteostat import daily, hourly
+
 from helper_functions import query_acis_data
-from meteostat import Daily, Hourly
 
 
 class StationData:
@@ -251,7 +252,7 @@ class StationDataMeteostat(StationData):
 
     def get_hourly_data(self) -> bool:
         one_day = timedelta(days=1)
-        data = Hourly(
+        data = hourly(
             loc=self.metadata["ID"],
             start=self.start - one_day,
             end=self.end + one_day,
@@ -306,7 +307,7 @@ class StationDataMeteostat(StationData):
         return super().get_hourly_data()
 
     def get_daily_data(self) -> bool:
-        data = Daily(
+        data = daily(
             loc=self.metadata["ID"],
             start=self.start,
             end=self.end,
