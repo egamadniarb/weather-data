@@ -1,22 +1,23 @@
+import contextlib
 import json
 from datetime import datetime
 from math import acos, cos, radians
-from typing import Union
 
 import pandas
 import pandas._libs.missing
 import requests
 from requests.exceptions import RequestException
 
+
 # Used for Meteostat implementation
-
-
 def meteostat_make_list(stations_dict: dict) -> list:
     stations_list = []
     for index in stations_dict:
         keys = list(stations_dict[index].keys())
         for key in keys:
-            if isinstance(stations_dict[index][key], pandas._libs.missing.NAType):
+            if isinstance(
+                stations_dict[index][key], pandas._libs.missing.NAType
+            ):
                 stations_dict[index][key] = "N/A"
         t_dict = {
             "name": stations_dict[index]["name"],
@@ -128,12 +129,10 @@ def neighboring(code: str):
     return neighboring_regions[code]
 
 
-def query_acis_data(query_type: str, data: str) -> Union[None, requests.Response]:
+def query_acis_data(query_type: str, data: str) -> None | requests.Response:
     if query_type == "Station":
         query_url = "https://data.nrcc.rcc-acis.org/StnMeta"
-    elif query_type == "DailyData":
-        query_url = "https://data.nrcc.rcc-acis.org/StnData"
-    elif query_type == "HourlyData":
+    elif query_type == "DailyData" or query_type == "HourlyData":
         query_url = "https://data.nrcc.rcc-acis.org/StnData"
     else:
         return None
@@ -205,20 +204,17 @@ def acis_make_list(stations: list) -> list:
         # set lat long to N/A if "ll" values are malformed or missing
         latitude = "N/A"
         longitude = "N/A"
-        if "ll" in station:
-            if len(station["ll"]) == 2:
-                latitude = float(station["ll"][1])
-                longitude = float(station["ll"][0])
+        if "ll" in station and len(station["ll"]) == 2:
+            latitude = float(station["ll"][1])
+            longitude = float(station["ll"][0])
 
         # set elevation to N/A if elev is malformed or missing
         elevation = "N/A"
         if "elev" in station:
             elevation = station["elev"]
             # ACIS returns Imperial values, convert feet to meters
-            try:
+            with contextlib.suppress(ValueError, TypeError):
                 elevation = round(float(elevation) / 3.2808, 2)
-            except ValueError, TypeError:
-                pass
         # time zone is offset from GMT/UTC
         time_zone = 0
         if "tzo" in station:
@@ -235,7 +231,9 @@ def acis_make_list(stations: list) -> list:
                 else:
                     continue
                 if len(hourly_dates) == 2:
-                    hourly_start = datetime.strptime(hourly_dates[0], "%Y-%m-%d")
+                    hourly_start = datetime.strptime(
+                        hourly_dates[0], "%Y-%m-%d"
+                    )
                     hourly_end = datetime.strptime(hourly_dates[1], "%Y-%m-%d")
                 else:
                     hourly_start = "N/A"
@@ -249,7 +247,8 @@ def acis_make_list(stations: list) -> list:
             "name": name,
             "country": (
                 "CA"
-                if state in ["AB", "BC", "MB", "NB", "NL", "NS", "ON", "PE", "QC", "SK"]
+                if state
+                in ["AB", "BC", "MB", "NB", "NL", "NS", "ON", "PE", "QC", "SK"]
                 else "US"
             ),
             "state": state,
