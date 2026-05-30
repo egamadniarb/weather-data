@@ -23,17 +23,11 @@ class StationData:
             return d, m, s
 
         deg, min, sec = degree_convert(station_metadata["latitude"])
-        if deg > 0.0:
-            hem = "N"
-        else:
-            hem = "S"
-        latitude = "{}º {}' {}\" {}".format(abs(deg), min, round(sec, 4), hem)
+        hem = "N" if deg > 0.0 else "S"
+        latitude = f"{abs(deg)}º {min}' {round(sec, 4)}\" {hem}"
         deg, min, sec = degree_convert(station_metadata["longitude"])
-        if deg > 0.0:
-            hem = "E"
-        else:
-            hem = "W"
-        longitude = "{}º {}' {}\" {}".format(abs(deg), min, round(sec, 4), hem)
+        hem = "E" if deg > 0.0 else "W"
+        longitude = f"{abs(deg)}º {min}' {round(sec, 4)}\" {hem}"
 
         self.metadata = {
             "Source": data_source,
@@ -54,7 +48,9 @@ class StationData:
         if "distance" in station_metadata:
             self.metadata["Distance"] = {
                 "Metric": station_metadata["distance"],
-                "Imperial": round(station_metadata["distance"] * 3.280839895, 2),
+                "Imperial": round(
+                    station_metadata["distance"] * 3.280839895, 2
+                ),
             }
 
         self.start = start
@@ -185,13 +181,16 @@ class StationData:
                             },
                             "readings": {
                                 "Metric": {
-                                    "tavg": round(sum(temp_list) / len(temp_list), 2),
+                                    "tavg": round(
+                                        sum(temp_list) / len(temp_list), 2
+                                    ),
                                     "tmin": min(temp_list),
                                     "tmax": max(temp_list),
                                 },
                                 "Imperial": {
                                     "tavg": round(
-                                        (sum(temp_list) / len(temp_list)) * 1.8 + 32,
+                                        (sum(temp_list) / len(temp_list)) * 1.8
+                                        + 32,
                                         2,
                                     ),
                                     "tmin": round(min(temp_list) * 1.8 + 32, 2),
@@ -247,7 +246,9 @@ class StationData:
 class StationDataMeteostat(StationData):
     id = "Meteostat"
 
-    def __init__(self, station_metadata: dict, start: datetime, end: datetime) -> None:
+    def __init__(
+        self, station_metadata: dict, start: datetime, end: datetime
+    ) -> None:
         super().__init__("Meteostat", station_metadata, start, end)
 
     def get_hourly_data(self) -> bool:
@@ -369,7 +370,9 @@ class StationDataMeteostat(StationData):
 class StationDataACIS(StationData):
     id = "ACIS"
 
-    def __init__(self, station_metadata: dict, start: datetime, end: datetime) -> None:
+    def __init__(
+        self, station_metadata: dict, start: datetime, end: datetime
+    ) -> None:
         super().__init__("ACIS", station_metadata, start, end)
 
     def get_hourly_data(self) -> bool:
@@ -386,79 +389,74 @@ class StationDataACIS(StationData):
             "meta": "tzo",
         }
         raw_result = query_acis_data("HourlyData", parameter_string)
-        if raw_result:
-            if raw_result.status_code == 200:
-                json_data = raw_result.json()
-                tzoffset = float(nan)
-                if "meta" in json_data:
-                    if "tzo" in json_data["meta"]:
-                        tzoffset = float(json_data["meta"]["tzo"])
-                if "data" in json_data:
-                    headers = {
-                        "Metric": [
-                            "Temperature ºC",
-                            "Relative Humidity",
-                        ],
-                        "Imperial": [
-                            "Temperature ºF",
-                            "Relative Humidity",
-                        ],
-                    }
-                    response_data = json_data["data"]
-                    result_list = []
-                    for day in response_data:
-                        dt = datetime.strptime(day[0], "%Y-%m-%d")
-                        ryear = dt.year
-                        rmonth = dt.month
-                        rday = dt.day
-                        measure_time = datetime.strptime("00:00", "%H:%M")
-                        for idx in range(len(day[1])):
-                            temp = day[1][idx]
-                            if temp == "M":
-                                temp = float(nan)
-                                mtemp = temp
-                            else:
-                                mtemp = round((float(temp) - 32.0) / 1.8, 2)
-                            rhum = day[2][idx]
-                            if rhum == "M":
-                                rhum = float(nan)
-                            else:
-                                rhum = int(rhum)
+        if raw_result and raw_result.status_code == 200:
+            json_data = raw_result.json()
+            tzoffset = float(nan)
+            if "meta" in json_data and "tzo" in json_data["meta"]:
+                tzoffset = float(json_data["meta"]["tzo"])
+            if "data" in json_data:
+                headers = {
+                    "Metric": [
+                        "Temperature ºC",
+                        "Relative Humidity",
+                    ],
+                    "Imperial": [
+                        "Temperature ºF",
+                        "Relative Humidity",
+                    ],
+                }
+                response_data = json_data["data"]
+                result_list = []
+                for day in response_data:
+                    dt = datetime.strptime(day[0], "%Y-%m-%d")
+                    ryear = dt.year
+                    rmonth = dt.month
+                    rday = dt.day
+                    measure_time = datetime.strptime("00:00", "%H:%M")
+                    for idx in range(len(day[1])):
+                        temp = day[1][idx]
+                        if temp == "M":
+                            temp = float(nan)
+                            mtemp = temp
+                        else:
+                            mtemp = round((float(temp) - 32.0) / 1.8, 2)
+                        rhum = day[2][idx]
+                        rhum = float(nan) if rhum == "M" else int(rhum)
 
-                            timestamp = {
-                                "Year": ryear,
-                                "Month": rmonth,
-                                "Day": rday,
-                                "Hour": "{} UTC {}{}".format(
-                                    measure_time.hour,
-                                    "+" if tzoffset >= 0 else "",
-                                    tzoffset,
-                                ),
+                        timestamp = {
+                            "Year": ryear,
+                            "Month": rmonth,
+                            "Day": rday,
+                            "Hour": "{} UTC {}{}".format(
+                                measure_time.hour,
+                                "+" if tzoffset >= 0 else "",
+                                tzoffset,
+                            ),
+                        }
+                        reading = {
+                            "Metric": {"temp": mtemp, "rhum": rhum},
+                            "Imperial": {"temp": temp, "rhum": rhum},
+                        }
+                        dtindex = datetime(
+                            dt.year,
+                            dt.month,
+                            dt.day,
+                            hour=measure_time.hour,
+                            minute=0,
+                            tzinfo=timezone(timedelta(hours=tzoffset)),
+                        )
+                        result_list.append(
+                            {
+                                "dtindex": dtindex,
+                                "timestamp": timestamp,
+                                "readings": reading,
                             }
-                            reading = {
-                                "Metric": {"temp": mtemp, "rhum": rhum},
-                                "Imperial": {"temp": temp, "rhum": rhum},
-                            }
-                            dtindex = datetime(
-                                dt.year,
-                                dt.month,
-                                dt.day,
-                                hour=measure_time.hour,
-                                minute=0,
-                                tzinfo=timezone(timedelta(hours=tzoffset)),
-                            )
-                            result_list.append(
-                                {
-                                    "dtindex": dtindex,
-                                    "timestamp": timestamp,
-                                    "readings": reading,
-                                }
-                            )
-                            measure_time = measure_time + timedelta(hours=1)
-                    self.hourly_data = {
-                        "headers": headers,
-                        "data": result_list,
-                    }
+                        )
+                        measure_time = measure_time + timedelta(hours=1)
+                self.hourly_data = {
+                    "headers": headers,
+                    "data": result_list,
+                }
         return super().get_hourly_data()
 
     def get_daily_data(self) -> bool:

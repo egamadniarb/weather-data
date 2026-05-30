@@ -53,12 +53,16 @@ class StationLocatorMeteostat(StationLocator):
     @classmethod
     def report_coverage(cls):
         coverage = {}
-        countries = {country.name: country.alpha_2 for country in pycountry.countries}
+        countries = {
+            country.name: country.alpha_2 for country in pycountry.countries
+        }
         country_names = list(countries.keys())
         for name in country_names:
             regions = {
                 region.name: region.code[3:][:2]
-                for region in pycountry.subdivisions.get(country_code=countries[name])
+                for region in pycountry.subdivisions.get(
+                    country_code=countries[name]
+                )
             }
             coverage[name] = [countries[name], regions]
         return coverage
@@ -77,7 +81,9 @@ class StationLocatorMeteostat(StationLocator):
         self.stations_list.sort(key=lambda station: station.get("name"))
         return self.stations_list
 
-    def stations_by_location(self, latitude: float, longitude: float, state: str):
+    def stations_by_location(
+        self, latitude: float, longitude: float, state: str
+    ):
         self.stations = None
 
         if latitude and longitude:
@@ -151,7 +157,9 @@ class StationLocatorACIS(StationLocator):
                 if "meta" in json_data:
                     self.stations = json_data["meta"]
                     self.stations_list = acis_make_list(self.stations)
-                    self.stations_list.sort(key=lambda station: station.get("name"))
+                    self.stations_list.sort(
+                        key=lambda station: station.get("name")
+                    )
         return self.stations_list
 
     def stations_by_location(
@@ -202,8 +210,14 @@ class StationLocatorACIS(StationLocator):
     def filter_by_hourly(self, start: datetime, end: datetime) -> list:
         temp_list = []
         for station in self.stations_list:
-            if station["hourly_start"] != "N/A" and station["hourly_end"] != "N/A":
-                if start >= station["hourly_start"] and end <= station["hourly_end"]:
+            if (
+                station["hourly_start"] != "N/A"
+                and station["hourly_end"] != "N/A"
+            ):
+                if (
+                    start >= station["hourly_start"]
+                    and end <= station["hourly_end"]
+                ):
                     temp_list.append(station)
         self.stations_list = temp_list
         return self.stations_list
@@ -221,16 +235,14 @@ if __name__ == "__main__":
     # Coverage data available from the class StationLocator
 
     coverage = StationLocator.get_coverage()
-    print("StationLocator has {} data sources".format(len(coverage.keys())))
+    print(f"StationLocator has {len(coverage.keys())} data sources")
     datasources = list(coverage.keys())
     for datasource in datasources:
-        print("Data Source: {} : ".format(datasource))
+        print(f"Data Source: {datasource} : ")
         countries = list(coverage[datasource].keys())
         for country in countries:
             print(
-                "Country Name: {}, Country Code {}".format(
-                    country, coverage[datasource][country][0]
-                )
+                f"Country Name: {country}, Country Code {coverage[datasource][country][0]}"
             )
             regions = coverage[datasource][country][1]
             region_names = list(regions.keys())
@@ -241,18 +253,13 @@ if __name__ == "__main__":
                     and datasource == "ACIS"
                 ):
                     print(
-                        "\tCountry: {}, Region Name: {}, Region Code: {}, \
-                        Neighboring: {}".format(
-                            country,
-                            region_name,
-                            region_code,
-                            neighboring(region_code),
-                        )
+                        f"\tCountry: {country}, Region Name: {region_name}, Region Code: {region_code}, \
+                        Neighboring: {neighboring(region_code)}"
                     )
                 else:
                     print(
-                        "\tCountry: {}, Region Name: {}, \
-                            Region Code: {}".format(country, region_name, region_code)
+                        f"\tCountry: {country}, Region Name: {region_name}, \
+                            Region Code: {region_code}"
                     )
 
 #     lat = 42.3508285
