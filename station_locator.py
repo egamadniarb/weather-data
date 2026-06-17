@@ -258,7 +258,7 @@ if __name__ == "__main__":
                     )
                 else:
                     print(
-                        f"\tCountry: {country}, Region Name: {region_name}, \
+                        f"\tCountry: {country}, Region Names: {region_name}, \
                             Region Code: {region_code}"
                     )
 
