@@ -151,15 +151,12 @@ class StationLocatorACIS(StationLocator):
             "state": state,
         }
         raw_result = query_acis_data("Station", parameter_string)
-        if raw_result:
-            if raw_result.status_code == 200:
-                json_data = raw_result.json()
-                if "meta" in json_data:
-                    self.stations = json_data["meta"]
-                    self.stations_list = acis_make_list(self.stations)
-                    self.stations_list.sort(
-                        key=lambda station: station.get("name")
-                    )
+        if raw_result and raw_result.status_code == 200:
+            json_data = raw_result.json()
+            if "meta" in json_data:
+                self.stations = json_data["meta"]
+                self.stations_list = acis_make_list(self.stations)
+                self.stations_list.sort(key=lambda station: station.get("name"))
         return self.stations_list
 
     def stations_by_location(
@@ -180,29 +177,28 @@ class StationLocatorACIS(StationLocator):
                 "state": each_state,
             }
             raw_result = query_acis_data("Station", parameter_string)
-            if raw_result:
-                if raw_result.status_code == 200:
-                    json_data = raw_result.json()
-                    if "meta" in json_data:
-                        self.stations = json_data["meta"]
-                        raw_stations_list = acis_make_list(self.stations)
-                        temp_list = []
-                        for station in raw_stations_list:
-                            if (
-                                station["latitude"] != "N/A"
-                                and station["longitude"] != "N/A"
-                            ):
-                                distance = calculate_spherical_distance(
-                                    latitude,
-                                    longitude,
-                                    station["latitude"],
-                                    station["longitude"],
-                                )
-                                if distance <= self.lookup_radius:
-                                    station["distance"] = distance
-                                    temp_list.append(station)
-                        if len(temp_list) > 0:
-                            self.stations_list.extend(temp_list)
+            if raw_result and raw_result.status_code == 200:
+                json_data = raw_result.json()
+                if "meta" in json_data:
+                    self.stations = json_data["meta"]
+                    raw_stations_list = acis_make_list(self.stations)
+                    temp_list = []
+                    for station in raw_stations_list:
+                        if (
+                            station["latitude"] != "N/A"
+                            and station["longitude"] != "N/A"
+                        ):
+                            distance = calculate_spherical_distance(
+                                latitude,
+                                longitude,
+                                station["latitude"],
+                                station["longitude"],
+                            )
+                            if distance <= self.lookup_radius:
+                                station["distance"] = distance
+                                temp_list.append(station)
+                    if len(temp_list) > 0:
+                        self.stations_list.extend(temp_list)
 
         self.stations_list.sort(key=lambda station: station.get("distance"))
         return self.stations_list
@@ -213,12 +209,11 @@ class StationLocatorACIS(StationLocator):
             if (
                 station["hourly_start"] != "N/A"
                 and station["hourly_end"] != "N/A"
+            ) and (
+                start >= station["hourly_start"]
+                and end <= station["hourly_end"]
             ):
-                if (
-                    start >= station["hourly_start"]
-                    and end <= station["hourly_end"]
-                ):
-                    temp_list.append(station)
+                temp_list.append(station)
         self.stations_list = temp_list
         return self.stations_list
 
